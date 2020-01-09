@@ -9,6 +9,7 @@ path = 'Data/Posters'
 import glob
 import scipy.misc
 import imageio
+
 image_glob = glob.glob(path+"/"+"*.jpg")
 img_dict = {}
 def get_id(filename):
@@ -35,3 +36,42 @@ def get_classes_from_movie(movie_id):
     g = str(df[df['imdbId']==movie_id]['Genre'].values[0])
     y[classes.index(g)] = 1
     return y  
+
+import random
+
+"""
+Some relatively simple image preprocessing
+"""
+def preprocess(img,size=32):
+    img = scipy.misc.imresize(img,(size,size))
+    img = img.astype(np.float32)
+    img = (img / 127.5) - 1.
+    return img
+    
+
+def get_dataset(train_size,img_size=32):
+        #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
+        indices = random.sample(range(len(list(img_dict.keys()))),train_size)
+        x = []
+        y = []
+        x_test = []
+        y_test = []
+        for i in range(len(list(img_dict.keys()))):
+            id_key = int(list(img_dict.keys())[i])
+            if i in indices:
+                x.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
+                y.append(get_classes_from_movie(id_key))
+            else:
+                x_test.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
+                y_test.append(get_classes_from_movie(id_key))
+        return x,y,x_test,y_test
+        
+#Constant to keep track of our image size
+SIZE = 128   
+x,y,x_test,y_test = get_dataset(900,img_size=SIZE)
+x = np.asarray(x)
+y = np.asarray(y)
+x_test = np.asarray(x_test)
+y_test = np.asarray(y_test)
+
+print(x)
