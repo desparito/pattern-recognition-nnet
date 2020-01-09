@@ -5,10 +5,10 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from subprocess import check_output
 
 #Needs to be changes to the correct path when the posters are there
-path = 'Data/SampleMoviePosters/SampleMoviePosters'
+path = 'Data/Posters'
 import glob
 import scipy.misc
-from PIL import Image
+import imageio
 image_glob = glob.glob(path+"/"+"*.jpg")
 img_dict = {}
 def get_id(filename):
@@ -16,7 +16,7 @@ def get_id(filename):
     index_f = filename.rfind(".jpg")
     return filename[index_s:index_f]
 #Populate image dict
-_ = [img_dict.update({get_id(fn):scipy.misc.imread(fn)}) for fn in image_glob]
+_ = [img_dict.update({get_id(fn):imageio.imread(fn)}) for fn in image_glob]
 
 #Reads the movie genres
 df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
