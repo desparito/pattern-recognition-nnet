@@ -9,17 +9,16 @@ path = 'Data/SampleMoviePosters/SampleMoviePosters'
 import glob
 import scipy.misc
 import imageio
+from PIL import Image
 
 image_glob = glob.glob(path+"/"+"*.jpg")
 img_dict = {}
 def get_id(filename):
     index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
     index_f = filename.rfind(".jpg")
-    print(filename[index_s:index_f])
     return filename[index_s:index_f]
 #Populate image dict
 _ = [img_dict.update({get_id(fn):imageio.imread(fn)}) for fn in image_glob]
-print(img_dict.keys())
 
 #Reads the movie genres
 df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
@@ -45,7 +44,7 @@ import random
 Some relatively simple image preprocessing
 """
 def preprocess(img,size=32):
-    img = scipy.misc.imresize(img,(size,size))
+    img = np.array(Image.fromarray(img).resize((size,size)))
     img = img.astype(np.float32)
     img = (img / 127.5) - 1.
     return img
@@ -69,14 +68,12 @@ def get_dataset(train_size,img_size=32):
         return x,y,x_test,y_test
         
 #Constant to keep track of our image size
-SIZE = 128   
+SIZE = 16   
 x,y,x_test,y_test = get_dataset(30,img_size=SIZE)
 x = np.asarray(x)
 y = np.asarray(y)
 x_test = np.asarray(x_test)
 y_test = np.asarray(y_test)
-
-print(x)
 
 #import tensorflow as tf
 #sess = tf.Session()
