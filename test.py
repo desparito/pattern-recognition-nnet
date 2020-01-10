@@ -5,7 +5,7 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from subprocess import check_output
 
 #Needs to be changes to the correct path when the posters are there
-path = 'Data/Posters'
+path = 'Data/SampleMoviePosters/SampleMoviePosters'
 import glob
 import scipy.misc
 import imageio
@@ -18,7 +18,7 @@ def get_id(filename):
     return filename[index_s:index_f]
 #Populate image dict
 _ = [img_dict.update({get_id(fn):imageio.imread(fn)}) for fn in image_glob]
-
+print(img_dict.keys())
 #Reads the movie genres
 df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
 genres = []
@@ -68,10 +68,45 @@ def get_dataset(train_size,img_size=32):
         
 #Constant to keep track of our image size
 SIZE = 128   
-x,y,x_test,y_test = get_dataset(900,img_size=SIZE)
+x,y,x_test,y_test = get_dataset(30,img_size=SIZE)
 x = np.asarray(x)
 y = np.asarray(y)
 x_test = np.asarray(x_test)
 y_test = np.asarray(y_test)
 
 print(x)
+
+#import tensorflow as tf
+#sess = tf.Session()
+from keras import backend as K
+#K.set_session(sess)
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+
+model = Sequential()
+model.add(Conv2D(32,kernel_size=(3,3),activation='relu',input_shape=(SIZE,SIZE,3)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(num_classes, activation='softmax'))
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=keras.optimizers.Adam(),
+              metrics=['accuracy'])
+
+
+model.fit(x, y,
+          batch_size=50,
+          epochs=5,
+          verbose=1,
+          validation_data=(x_test, y_test))
+score = model.evaluate(x_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
