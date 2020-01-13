@@ -66,9 +66,8 @@ def get_dataset(train_size,img_size=32):
                 x.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
                 y.append(get_classes_from_movie(id_key))
             else:
-                if not preprocess(img_dict[list(img_dict.keys())[i]],size=img_size).shape == (128,128,3):
-                    x_test.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
-                    y_test.append(get_classes_from_movie(id_key))
+                x_test.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
+                y_test.append(get_classes_from_movie(id_key))
         return x,y,x_test,y_test
         
 #Constant to keep track of our image size
