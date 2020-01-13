@@ -36,4 +36,4 @@ data.loc[data.Year.notna(), "Title"] = data.loc[data.Year.notna(), "Title"].appl
 
 # Write the data to a new csv with genres concatinated as in the origional dataset
 data.Genre = ['|'.join(i) for i in data.Genre]
-data.to_csv("data.csv", index=False)
+data.to_csv("Data/cleaned.csv", index=False)
