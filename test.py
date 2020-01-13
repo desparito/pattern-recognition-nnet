@@ -20,7 +20,7 @@ def get_id(filename):
     index_f = filename.rfind(".jpg")
     return filename[index_s:index_f]
 #Populate image dicts
-_ = [img_dict.update({get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False)}) for fn in image_glob]  for fn in image_glob]
+_ = [img_dict.update({get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False)}) for fn in image_glob]
 
 #Reads the movie genres
 df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
