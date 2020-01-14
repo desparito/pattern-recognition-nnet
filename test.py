@@ -6,7 +6,7 @@ import pandas as pd # pip install pandas
 
 from subprocess import check_output
 
-#Needs to be changes to the correct path when the posters are there
+#Adjust the path to the posters here:
 path = 'Data/SampleMoviePosters/SampleMoviePosters'
 import glob #pip install glob
 import scipy.misc #pip install ..
@@ -78,38 +78,18 @@ y = np.asarray(y)
 x_test = np.asarray(x_test)
 y_test = np.asarray(y_test)
 
-#import tensorflow as tf
-#sess = tf.Session()
-from keras import backend as K
-#K.set_session(sess)
 import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
+import vgg16
+import resnet
 
-model = Sequential()
-model.add(Conv2D(32,kernel_size=(3,3),activation='relu',input_shape=(SIZE,SIZE,3)))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(num_classes, activation='softmax'))
-
-model.compile(loss='categorical_crossentropy',
-              optimizer=keras.optimizers.Adam(),
-              metrics=['accuracy'])
-
+model = vgg16.vggmodel(1308, SIZE)
+model = resnet.resnet50(1308, SIZE)
 
 model.fit(x, y,
           batch_size=50,
           epochs=5,
-          verbose=1,
           validation_data=(x_test, y_test))
-score = model.evaluate(x_test, y_test, verbose=0)
+score = model.evaluate(x_test, y_test)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
