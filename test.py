@@ -25,20 +25,20 @@ _ = [img_dict.update({get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False
 #Reads the movie genres
 df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
 genres = []
-length = len(df)
 for n in range(len(df)):
-    g = str(df.loc[n]["Genre"])
-    genres.append(g)
+    string = str(df.loc[n]["Genre"])
+    gs = string.split("|")
+    genres += gs
     
 classes = list(set(genres))
 classes.sort()
 num_classes = len(classes)
 
-#TODO CHANGE THIS TO A FUNCTION WHICH RETURNS A VECTOR OF LENTH 24 WITH 0/1 FOR GENRE IT HAS GENRE IS NOW A STRING
 def get_classes_from_movie(movie_id):
     y = np.zeros(num_classes)
-    g = str(df[df['imdbId']==movie_id]['Genre'].values[0])
-    y[classes.index(g)] = 1
+    gs = str(df[df['imdbId']==movie_id]['Genre'].values[0])
+    for g in gs.split("|"):
+        y[classes.index(g)] = 1
     return y  
 
 import random
@@ -82,8 +82,8 @@ import keras
 import vgg16
 import resnet
 
-model = vgg16.vggmodel(1308, SIZE)
-model = resnet.resnet50(1308, SIZE)
+model = vgg16.vggmodel(num_classes, SIZE)
+#model = resnet.resnet50(num_classes, SIZE)
 
 model.fit(x, y,
           batch_size=50,

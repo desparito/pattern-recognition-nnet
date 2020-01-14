@@ -1,3 +1,4 @@
+import functools
 import keras
 import keras.models as models
 import keras.layers as layers
@@ -180,17 +181,18 @@ def resnet50(num_classes, size):
     x = identity_block(x, 3, [512, 512, 2048])
     x = identity_block(x, 3, [512, 512, 2048])
  
-    # average pool, 1000-d fc, softmax
+    # average pool, 1000-d fc, sigmoid
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.Dense(
-        num_classes, activation='softmax',
+        num_classes, activation='sigmoid',
         kernel_regularizer=regularizers.l2(L2_WEIGHT_DECAY),
         bias_regularizer=regularizers.l2(L2_WEIGHT_DECAY))(x)
  
     model = models.Model(img_input, x, name='resnet50')
 
-    # compiling the model, not sure if needs change
+    top3_acc = functools.partial(keras.metrics.top_k_categorical_accuracy, k=3)
+    top3_acc.__name__ = 'top3_accuracy'
     opt = Adam(lr=0.001)
-    model.compile(optimizer=opt, loss=keras.losses.categorical_crossentropy, metrics=['accuracy'])
+    model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc])
     
     return model
