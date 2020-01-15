@@ -116,7 +116,7 @@ def conv_block(input_tensor, kernel_size, filters, strides=(2, 2)):
 
 # input shape moet ff naar (width, height, 3)
 def resnet50(num_classes, size):
-    img_input = layers.Input(shape=(size, size, 3))
+    img_input = layers.Input(shape=(size[0], size[1], 3))
  
     if backend.image_data_format() == 'channels_first':
         x = layers.Lambda(lambda x: backend.permute_dimensions(x, (0, 3, 1, 2)),

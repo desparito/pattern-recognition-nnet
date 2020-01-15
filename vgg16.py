@@ -9,7 +9,7 @@ from keras.optimizers import Adam
 
 def vggmodel(num_classes, size):
     model = Sequential()
-    model.add(Conv2D(input_shape=(size,size,3),filters=64,kernel_size=(3,3),padding="same", activation="relu")) # needs adjustment input size
+    model.add(Conv2D(input_shape=(size[0],size[1],3),filters=64,kernel_size=(3,3),padding="same", activation="relu")) # needs adjustment input size
     model.add(Conv2D(filters=64,kernel_size=(3,3),padding="same", activation="relu"))
     model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
     model.add(Conv2D(filters=128, kernel_size=(3,3), padding="same", activation="relu"))

@@ -40,13 +40,13 @@ print("Processing data")
 """
 Some relatively simple image preprocessing
 """
-def preprocess(img,size=32):
-    img = np.array(Image.fromarray(img).resize((size,size)))
+def preprocess(img,size=(32,32)):
+    img = np.array(Image.fromarray(img).resize(size))
     img = img.astype(np.float32)
     img = (img / 127.5) - 1.
     return img
 
-def get_dataset(train_size,img_size=32):
+def get_dataset(train_size,img_size=(32,32)):
         #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
         images = list(img_dict)
         indices = random.sample(images,train_size)
@@ -64,7 +64,7 @@ def get_dataset(train_size,img_size=32):
         return x,y,x_test,y_test
 
 #Constant to keep track of our image size
-SIZE = 128
+SIZE = (128, 128)
 x,y,x_test,y_test = get_dataset(300,img_size=SIZE)
 x = np.asarray(x)
 y = np.asarray(y)
