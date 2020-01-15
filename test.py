@@ -95,9 +95,18 @@ print('Test accuracy:', score[1])
 
 pred = model.predict(np.asarray([x_test[5]]))
 
+#INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
+#loadedmodel = vgg16.vggmodel(num_classes, SIZE)
+#loadedmodel.load_weights("model.h5")
+#pred = loadedmodel.predict(np.asarray([x_test[5]]))
+
 print("pred")
 print(pred) #predictions of all classes
 print("np.argmax pred")
 print(np.argmax(pred)) #Max class predicted
 print("y_test[5]:")
 print(np.argmax(y_test[5])) #The real class
+
+#SAVE THE MODEL FOR FURTHER USE
+model.save_weights("model.h5")
+print("Saved model to disk")

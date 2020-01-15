@@ -144,9 +144,9 @@ def resnet50(num_classes, size):
  
     # Conv2_x
  
-    # 1×1, 64
-    # 3×3, 64
-    # 1×1, 256
+    # 1x1, 64
+    # 3x3, 64
+    # 1x1, 256
  
     x = conv_block(x, 3, [64, 64, 256], strides=(1, 1))
     x = identity_block(x, 3, [64, 64, 256])
@@ -154,9 +154,9 @@ def resnet50(num_classes, size):
  
     # Conv3_x
     #
-    # 1×1, 128
-    # 3×3, 128
-    # 1×1, 512
+    # 1x1, 128
+    # 3x3, 128
+    # 1x1, 512
  
     x = conv_block(x, 3, [128, 128, 512])
     x = identity_block(x, 3, [128, 128, 512])
@@ -164,9 +164,9 @@ def resnet50(num_classes, size):
     x = identity_block(x, 3, [128, 128, 512])
  
     # Conv4_x
-    # 1×1, 256
-    # 3×3, 256
-    # 1×1, 1024
+    # 1x1, 256
+    # 3x3, 256
+    # 1x1, 1024
     x = conv_block(x, 3, [256, 256, 1024])
     x = identity_block(x, 3, [256, 256, 1024])
     x = identity_block(x, 3, [256, 256, 1024])
@@ -174,9 +174,9 @@ def resnet50(num_classes, size):
     x = identity_block(x, 3, [256, 256, 1024])
     x = identity_block(x, 3, [256, 256, 1024])
  
-    # 1×1, 512
-    # 3×3, 512
-    # 1×1, 2048
+    # 1x1, 512
+    # 3x3, 512
+    # 1x1, 2048
     x = conv_block(x, 3, [512, 512, 2048])
     x = identity_block(x, 3, [512, 512, 2048])
     x = identity_block(x, 3, [512, 512, 2048])
