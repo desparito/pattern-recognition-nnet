@@ -26,23 +26,12 @@ def get_id(filename):
 img_dict = {get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False) for fn in image_glob}
 
 #Reads the movie genres
-df = pd.read_csv("Data/MovieGenre.csv",encoding="ISO-8859-1")
-genres = []
-for n in range(len(df)):
-    string = str(df.loc[n]["Genre"])
-    gs = string.split("|")
-    genres += gs
-    
-classes = list(set(genres))
-classes.sort()
-num_classes = len(classes)
+df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
+df.Genre = [x.split("|") for x in df.Genre]
 
-def get_classes_from_movie(movie_id):
-    y = np.zeros(num_classes)
-    gs = str(df[df['imdbId']==movie_id]['Genre'].values[0])
-    for g in gs.split("|"):
-        y[classes.index(g)] = 1
-    return y  
+genres = sorted(set(y for x in df.Genre for y in x))
+
+classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, index=df.index)
 
 import random
 
@@ -69,10 +58,10 @@ def get_dataset(train_size,img_size=32):
             id_key = int(list(img_dict.keys())[i])
             if i in indices:
                 x.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
-                y.append(get_classes_from_movie(id_key))
+                y.append(classes.loc[id_key])
             else:
                 x_test.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
-                y_test.append(get_classes_from_movie(id_key))
+                y_test.append(classes.loc[id_key])
         return x,y,x_test,y_test
         
 #Constant to keep track of our image size
@@ -89,8 +78,8 @@ import keras
 import vgg16
 import resnet
 
-model = vgg16.vggmodel(num_classes, SIZE)
-#model = resnet.resnet50(num_classes, SIZE)
+model = vgg16.vggmodel(len(genres), SIZE)
+#model = resnet.resnet50(len(genres), SIZE)
 
 model.fit(x, y,
           batch_size=50,
@@ -103,7 +92,7 @@ print('Test accuracy:', score[1])
 pred = model.predict(np.asarray([x_test[5]]))
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
-#loadedmodel = vgg16.vggmodel(num_classes, SIZE)
+#loadedmodel = vgg16.vggmodel(len(genres), SIZE)
 #loadedmodel.load_weights("model.h5")
 #pred = loadedmodel.predict(np.asarray([x_test[5]]))
 
