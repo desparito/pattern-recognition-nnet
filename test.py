@@ -27,8 +27,14 @@ img_dict = {get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False) for fn i
 
 #Reads the movie genres
 df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
-df.Genre = [x.split("|") for x in df.Genre]
 
+# Remove posters that do not occur in the csv and remove movies that have no poster
+for id_key in list(img_dict):
+    if id_key not in df.index:
+        del img_dict[id_key]
+df = df.loc[list(img_dict)]
+
+df.Genre = [x.split("|") for x in df.Genre]
 genres = sorted(set(y for x in df.Genre for y in x))
 
 classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, index=df.index)
