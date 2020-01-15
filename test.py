@@ -45,25 +45,24 @@ def preprocess(img,size=32):
     img = img.astype(np.float32)
     img = (img / 127.5) - 1.
     return img
-    
 
 def get_dataset(train_size,img_size=32):
         #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
-        indices = random.sample(range(len(list(img_dict.keys()))),train_size)
+        images = list(img_dict)
+        indices = random.sample(images,train_size)
         x = []
         y = []
         x_test = []
         y_test = []
-        for i in range(len(list(img_dict.keys()))):
-            id_key = int(list(img_dict.keys())[i])
-            if i in indices:
-                x.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
+        for id_key in images:
+            if id_key in indices:
+                x.append(preprocess(img_dict[id_key],size=img_size))
                 y.append(classes.loc[id_key])
             else:
-                x_test.append(preprocess(img_dict[list(img_dict.keys())[i]],size=img_size))
+                x_test.append(preprocess(img_dict[id_key],size=img_size))
                 y_test.append(classes.loc[id_key])
         return x,y,x_test,y_test
-        
+
 #Constant to keep track of our image size
 SIZE = 128
 x,y,x_test,y_test = get_dataset(30,img_size=SIZE)
