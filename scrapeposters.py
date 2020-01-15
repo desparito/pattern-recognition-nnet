@@ -1,7 +1,9 @@
 import pandas as pd
 import urllib.request
 import os.path
-
+from joblib import Parallel, delayed
+import multiprocessing
+     
 df = pd.read_csv("Data/cleaned.csv", usecols=["imdbId", "Poster"])
 
 if not os.path.isdir("Data/Posters"):
@@ -9,8 +11,7 @@ if not os.path.isdir("Data/Posters"):
 
 open("Data/downloaderror.csv", 'w').close()
 
-
-for row in df.itertuples(index=False):
+def downloadPoster(row):
     name = "Data/Posters/" + str(row.imdbId) + ".jpg"
     if not os.path.isfile(name):
         try:
@@ -19,3 +20,6 @@ for row in df.itertuples(index=False):
             errors = open("Data/downloaderror.csv", 'a')
             errors.write(str(row.imdbId)+"\n")
             errors.close()
+ 
+num_cores = multiprocessing.cpu_count()
+results = Parallel(n_jobs=num_cores)(delayed(downloadPoster)(i) for i in df.itertuples(index=False))
