@@ -1,6 +1,7 @@
 # vgg 16 (16 layers with weights)
 import functools
 import keras
+import metric
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPool2D
 from keras.models import Sequential
@@ -32,7 +33,7 @@ def vggmodel(num_classes, size):
     model.add(Dense(units=4096,activation="relu"))
     model.add(Dense(units=num_classes, activation="sigmoid")) # needs other kind of layer for chance per label
 
-    top3_acc = functools.partial(keras.metrics.top_k_categorical_accuracy, k=3)
+    top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
     top3_acc.__name__ = 'top3_accuracy'
     opt = Adam(lr=0.001)
     model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc])

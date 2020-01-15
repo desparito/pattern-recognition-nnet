@@ -65,7 +65,7 @@ def get_dataset(train_size,img_size=32):
 
 #Constant to keep track of our image size
 SIZE = 128
-x,y,x_test,y_test = get_dataset(30,img_size=SIZE)
+x,y,x_test,y_test = get_dataset(300,img_size=SIZE)
 x = np.asarray(x)
 y = np.asarray(y)
 x_test = np.asarray(x_test)
@@ -85,23 +85,17 @@ model.fit(x, y,
           epochs=5,
           validation_data=(x_test, y_test))
 score = model.evaluate(x_test, y_test)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
-
-pred = model.predict(np.asarray([x_test[5]]))
+#Print metrics:
+for i in range(len(model.metrics_names)):
+    print(model.metrics_names[i]+':', score[i])
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
 #loadedmodel = vgg16.vggmodel(len(genres), SIZE)
 #loadedmodel.load_weights("model.h5")
 #pred = loadedmodel.predict(np.asarray([x_test[5]]))
 
-print("pred")
-print(pred) #predictions of all classes
-print("np.argmax pred")
-print(np.argmax(pred)) #Max class predicted
-print("y_test[5]:")
-print(np.argmax(y_test[5])) #The real class
-
 #SAVE THE MODEL FOR FURTHER USE
-model.save_weights("model.h5")
-print("Saved model to disk")
+#model.save_weights("model.h5")
+#print("Saved model to disk")
+
+
