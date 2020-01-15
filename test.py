@@ -13,6 +13,8 @@ import scipy.misc #pip install ..
 import imageio #pip install imageio
 from PIL import Image #pip install Pillow
 
+print("Reading data")
+
 image_glob = glob.glob(path+"/"+"*.jpg")
 img_dict = {}
 def get_id(filename):
@@ -42,6 +44,8 @@ def get_classes_from_movie(movie_id):
     return y  
 
 import random
+
+print("Processing data")
 
 """
 Some relatively simple image preprocessing
@@ -77,6 +81,8 @@ x = np.asarray(x)
 y = np.asarray(y)
 x_test = np.asarray(x_test)
 y_test = np.asarray(y_test)
+
+print("Using model")
 
 import keras
 import vgg16

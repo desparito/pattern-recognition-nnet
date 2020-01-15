@@ -8,7 +8,6 @@ if not os.path.isdir("Data/Posters"):
     os.makedirs("Data/Posters")
 
 for row in df.itertuples(index=False):
-    print("Downloading: %i"%row.imdbId)
     name = "Data/Posters/" + str(row.imdbId) + ".jpg"
     if not os.path.isfile(name):
         try:
