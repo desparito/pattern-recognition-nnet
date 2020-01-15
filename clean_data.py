@@ -1,6 +1,7 @@
 import pandas as pd
 from numpy import nan
 from collections import Counter
+import os.path
 
 # Read the csv
 data = pd.read_csv("Data/MovieGenre.csv", encoding="latin-1")
@@ -33,6 +34,10 @@ data.loc[data.Year.notna(), "Title"] = data.loc[data.Year.notna(), "Title"].appl
 
 # Remove all moves that do not have a year
 #data = data[data.Year.notna()]
+
+if os.path.isfile("Data/downloaderror.csv"):
+    posters = list(pd.read_csv("Data/downloaderror.csv", header=None)[0])
+    data = data[-data.imdbId.isin(posters)]
 
 # Write the data to a new csv with genres concatinated as in the origional dataset
 data.Genre = ['|'.join(i) for i in data.Genre]
