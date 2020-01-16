@@ -115,7 +115,7 @@ def conv_block(input_tensor, kernel_size, filters, strides=(2, 2)):
     return x
 
 # input shape moet ff naar (width, height, 3)
-def resnet50(num_classes, size):
+def resnet50(num_classes, size, compiled = True):
     img_input = layers.Input(shape=(size[1], size[0], 3))
  
     if backend.image_data_format() == 'channels_first':
@@ -184,15 +184,18 @@ def resnet50(num_classes, size):
  
     # average pool, 1000-d fc, sigmoid
     x = layers.GlobalAveragePooling2D()(x)
-    x = layers.Dense(
-        num_classes, activation='sigmoid',
-        kernel_regularizer=regularizers.l2(L2_WEIGHT_DECAY),
-        bias_regularizer=regularizers.l2(L2_WEIGHT_DECAY))(x)
+    if(compiled):
+        x = layers.Dense(
+            num_classes, activation='sigmoid',
+            kernel_regularizer=regularizers.l2(L2_WEIGHT_DECAY),
+            bias_regularizer=regularizers.l2(L2_WEIGHT_DECAY))(x)
  
     model = models.Model(img_input, x, name='resnet50')
 
-    top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
-    top3_acc.__name__ = 'top3_accuracy'
-    opt = Adam(lr=0.001)
-    model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc])  
+    if(compiled):
+        top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
+        top3_acc.__name__ = 'top3_accuracy'
+        opt = Adam(lr=0.001)
+        model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc]) 
+         
     return model
