@@ -82,6 +82,9 @@ print("Using model")
 import keras
 import vgg16
 import resnet
+import fcnet
+
+fcnmodel = fcnet.fcnmodel(len(genres))
 
 model = vgg16.vggmodel(len(genres), SIZE)
 #model = resnet.resnet50(len(genres), SIZE)
@@ -103,5 +106,3 @@ for i in range(len(model.metrics_names)):
 #SAVE THE MODEL FOR FURTHER USE
 #model.save_weights("model.h5")
 #print("Saved model to disk")
-
-

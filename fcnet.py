@@ -3,12 +3,12 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-def fcnmodel(num_classes, size):
+def fcnmodel(num_classes):
     # get input objects
     # get genres as input labels
     model = sequential()
     netSize = 120
-    model.Add(Dense(netSize, activation = 'relu', input_shape = (size[1], size[0], 1)))
+    model.Add(Dense(netSize, activation = 'relu', input_shape = (80, 1)))
     model.Add(Dense(netSize, activation = 'relu'))
     model.Add(Dense(netSize, activation = 'relu'))
     model.add(Dense(units=num_classes, activation="sigmoid"))
