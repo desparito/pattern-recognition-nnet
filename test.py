@@ -32,6 +32,7 @@ img_dict = {get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False) for fn i
 df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
 if(USE_YOLO):
     yolo_df = pd.read_csv("Data/yolo.csv", index_col=0, encoding="utf-8-sig")
+    yolo_df = yolo_df.fillna(0)
 
 # Remove posters that do not occur in the csv and remove movies that have no poster
 for id_key in list(img_dict):
@@ -121,8 +122,7 @@ if USE_YOLO:
     img_model = vgg16.vggmodel(len(genres), SIZE, False)
     #img_model = resnet.resnet50(len(genres), SIZE, False) 
     model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model)
-    print(x_yolo_test.shape)
-    print(y_test.shape)
+
     model.fit([x_yolo,x_img], y,
           batch_size=50,
           epochs=5,
