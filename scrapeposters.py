@@ -22,4 +22,4 @@ def downloadPoster(row):
             errors.close()
  
 num_cores = multiprocessing.cpu_count()
-results = Parallel(n_jobs=num_cores)(delayed(downloadPoster)(i) for i in df.itertuples(index=False))
+Parallel(n_jobs=num_cores)(delayed(downloadPoster)(i) for i in df.itertuples(index=False))
