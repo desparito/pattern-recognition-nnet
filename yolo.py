@@ -145,31 +145,14 @@ def get_boxes(boxes, labels, thresh):
  
 # draw all results
 
- 
 # load yolov3 model
 model = load_model('model.h5')
 # define the expected input shape for the model
-input_w, input_h = 416, 416
-# define our new photo
-photo_filename = 'zebra.jpg'
-# load and prepare image
-image, image_w, image_h = load_image_pixels(photo_filename, (input_w, input_h))
-# make prediction
-yhat = model.predict(image)
-# summarize the shape of the list of arrays
-print([a.shape for a in yhat])
+input_w, input_h = 128, 128
 # define the anchors
 anchors = [[116,90, 156,198, 373,326], [30,61, 62,45, 59,119], [10,13, 16,30, 33,23]]
 # define the probability threshold for detected objects
 class_threshold = 0.6
-boxes = list()
-for i in range(len(yhat)):
-	# decode the output of the network
-	boxes += decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
-# correct the sizes of the bounding boxes for the shape of the image
-correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
-# suppress non-maximal boxes
-do_nms(boxes, 0.5)
 # define the labels
 labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck",
 	"boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
@@ -181,10 +164,71 @@ labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", 
 	"chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
 	"remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
 	"book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
-# get the details of the detected objects
-v_boxes, v_labels, v_scores = get_boxes(boxes, labels, class_threshold)
-# summarize what we found
-for i in range(len(v_boxes)):
-	print(v_labels[i], v_scores[i])
-# draw what we found
-#draw_boxes(photo_filename, v_boxes, v_labels, v_scores)
+
+import pandas as pd
+import glob #pip install glob
+from joblib import Parallel, delayed
+import multiprocessing
+import os.path
+
+def get_id(filename):
+    index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
+    index_f = filename.rfind(".jpg")
+    return int(filename[index_s:index_f])
+
+def get_filename(imgid):
+    return "%s/%i.jpg"%(path,imgid)
+
+path = 'Data/Posters'
+image_glob = [get_id(i) for i in glob.glob(path+"/*.jpg")]
+
+if not os.path.isfile("Data/yolo.csv"):
+    print("Making new")
+    classifications = pd.DataFrame(index=[], columns=labels)
+    classifications.index.name='img'
+else:
+    print("Loading existing")
+    classifications = pd.read_csv("Data/yolo.csv", index_col="img")
+    image_glob = [i for i in image_glob if not i in classifications.index]
+
+classifications.to_csv("Data/yolo.csv")
+
+def classify(imgid):
+    c = pd.DataFrame(index=[imgid], columns=labels)
+    # load and prepare image
+    image, image_w, image_h = load_image_pixels(get_filename(imgid), (input_w, input_h))
+    # make prediction
+    yhat = model.predict(image)
+    # summarize the shape of the list of arrays
+    #print([a.shape for a in yhat])
+    boxes = list()
+    for i in range(len(yhat)):
+        # decode the output of the network
+        boxes += decode_netout(yhat[i][0], anchors[i], class_threshold, input_h, input_w)
+    # correct the sizes of the bounding boxes for the shape of the image
+    correct_yolo_boxes(boxes, image_h, image_w, input_h, input_w)
+    # suppress non-maximal boxes
+    do_nms(boxes, 0.5)
+    # get the details of the detected objects
+    v_boxes, v_labels, v_scores = get_boxes(boxes, labels, class_threshold)
+    # summarize what we found
+    for i in range(len(v_boxes)):
+        c.loc[imgid, v_labels[i]] = v_scores[i]
+        #print(v_labels[i], v_scores[i])
+    # draw what we found
+    #draw_boxes(imgid, v_boxes, v_labels, v_scores)
+    c.to_csv("Data/yolo.csv", mode="a", header=False)
+
+def classifymany(items):
+    for x in items:
+        classify(x)
+
+MULTITREAD = True
+if MULTITREAD:
+    num_cores = multiprocessing.cpu_count()
+    num_items = int(len(image_glob)/num_cores) * num_cores
+    image_glob = np.reshape(image_glob[:num_items], (num_cores, -1))
+    print("%i items per thread" % image_glob.shape[1])
+    Parallel(n_jobs=2)(delayed(classifymany)(i) for i in image_glob)
+else:
+    classifymany(image_glob)
