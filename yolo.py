@@ -229,6 +229,6 @@ if MULTITREAD:
     num_items = int(len(image_glob)/num_cores) * num_cores
     image_glob = np.reshape(image_glob[:num_items], (num_cores, -1))
     print("%i items per thread" % image_glob.shape[1])
-    Parallel(n_jobs=2)(delayed(classifymany)(i) for i in image_glob)
+    Parallel(n_jobs=num_cores)(delayed(classifymany)(i) for i in image_glob)
 else:
     classifymany(image_glob)
