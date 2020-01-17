@@ -14,7 +14,7 @@ import imageio #pip install imageio
 from PIL import Image #pip install Pillow
 
 #Boolean to choose if we want to use YOLO:
-USE_YOLO = True
+USE_YOLO = False
 
 print("Reading data")
 
@@ -141,6 +141,52 @@ else:
 #Print metrics:
 for i in range(len(model.metrics_names)):
     print(model.metrics_names[i]+':', score[i])
+
+#Visualise:
+#https://github.com/nickbiso/Keras-Class-Activation-Map/blob/master/Class%20Activation%20Map(CAM).ipynb
+VISUALISE = False
+if (not USE_YOLO) and VISUALISE:
+    visualise_keys = [25607, 25601, 25590, 25586, 25580, 25555, 25536, 25499]
+    vis = []
+    for key in visualise_keys:
+        vis.append(preprocess(img_dict[id_key],size=SIZE))
+    preds = model.predict(np.asarray(vis))
+    argmax = np.argmax(preds[0])
+    output = model.output[:, argmax]
+
+    last_conv_layer = model.get_layer('last_conv') #for vgg16
+    #last_conv_later = ??? #for resnet?
+    import keras.backend as K
+    grads = K.gradients(output, last_conv_layer.output)[0]
+    pooled_grads = K.mean(grads, axis=(0, 1, 2))
+    iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
+    pooled_grads_value, conv_layer_output_value = iterate(np.asarray(vis))
+
+    for i in range(512):
+        conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
+    heatmap = np.mean(conv_layer_output_value, axis=-1)
+    heatmap = np.maximum(heatmap, 0)
+    heatmap /= np.max(heatmap)
+
+    import cv2 #pip install opencv-python
+    for key in visualise_keys:
+        img = cv2.imread(path + '/' + str(key) + '.jpg')
+        heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+        heatmap = np.uint8(255 * heatmap)
+        heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+        hif = .8
+        superimposed_img = heatmap * hif + img
+        output = './Heatmaps/' + str(key) + '.jpeg'
+        cv2.imwrite(output, superimposed_img)
+        img=imageio.imread(output)
+
+        import matplotlib
+        matplotlib.use('agg')
+        import matplotlib.pyplot as plt #pip install matplotlib
+        plt.imshow(img)
+        plt.axis('off')
+        plt.title('Heatmap for label' + str(argmax))
+        plt.figure().savefig('./Heatmaps/' + str(key) + '_plot.png')
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
 #loadedmodel = vgg16.vggmodel(len(genres), SIZE)
