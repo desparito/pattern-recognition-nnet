@@ -62,29 +62,7 @@ def preprocess(img,size=(32,32)):
     img = (img / 127.5) - 1.
     return img
 
-def get_dataset(train_size,img_size=(32,32)):
-    #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
-    images = list(img_dict)
-    indices = random.sample(images,train_size)
-    x_img = []
-    x_img_test = []
-    y = []
-    y_test = []
-    for id_key in images:
-        if id_key in indices:
-            x_img.append(preprocess(img_dict[id_key],size=img_size))
-            y.append(classes.loc[id_key])
-        else:
-            x_img_test.append(preprocess(img_dict[id_key],size=img_size))
-            y_test.append(classes.loc[id_key])
-    return (
-        np.asarray(x_img),
-        np.asarray(x_img_test),
-        np.asarray(y),
-        np.asarray(y_test)
-        )
-
-def get_dataset_yolo(train_size, img_size=(32,32)):
+def get_dataset(train_size, img_size=(32,32)):
     images = list(img_dict)
     indices = random.sample(images,train_size)
     x_img = []
@@ -96,12 +74,14 @@ def get_dataset_yolo(train_size, img_size=(32,32)):
     for id_key in images:
         if id_key in indices:
             x_img.append(preprocess(img_dict[id_key],size=img_size))
-            x_yolo.append([yolo_df.loc[id_key]])
             y.append(classes.loc[id_key])
+            if USE_YOLO:
+                x_yolo.append([yolo_df.loc[id_key]])
         else:
             x_img_test.append(preprocess(img_dict[id_key],size=img_size))
-            x_yolo_test.append([yolo_df.loc[id_key]])
             y_test.append(classes.loc[id_key])
+            if USE_YOLO:
+                x_yolo_test.append([yolo_df.loc[id_key]])
     return (
         np.asarray(x_img),
         np.asarray(x_img_test),
@@ -113,10 +93,7 @@ def get_dataset_yolo(train_size, img_size=(32,32)):
 
 #Constant to keep track of our image size
 SIZE = (128, 128)
-if USE_YOLO:
-    x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset_yolo(300,img_size=SIZE)
-else:
-    x_img, x_img_test, y, y_test = get_dataset(300,img_size=SIZE)
+x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(300,img_size=SIZE)
 
 print("Using model")
 
