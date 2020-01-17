@@ -7,7 +7,7 @@ import pandas as pd # pip install pandas
 from subprocess import check_output
 
 #Adjust the path to the posters here:
-path = 'Data/SampleMoviePosters/SampleMoviePosters'
+path = 'Data/SampleMoviePosters/SampleMoviePosters/'
 import glob #pip install glob
 import scipy.misc #pip install ..
 import imageio #pip install imageio
@@ -18,15 +18,15 @@ USE_YOLO = False
 
 print("Reading data")
 
-image_glob = glob.glob(path+"/"+"*.jpg")
+image_glob = glob.glob(path+"*.jpg")
 
 def get_id(filename):
     index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
     index_f = filename.rfind(".jpg")
     return int(filename[index_s:index_f])
 
-#Populate image dicts
-img_dict = {get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False) for fn in image_glob}
+# Populate image dicts
+img_dict = {get_id(fn):fn for fn in image_glob}
 
 #Reads the movie genres
 df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
@@ -57,6 +57,7 @@ print("Processing data")
 Some relatively simple image preprocessing
 """
 def preprocess(img,size=(32,32)):
+    img = imageio.imread(img, pilmode="RGB", as_gray=False)
     img = np.array(Image.fromarray(img).resize(size))
     img = img.astype(np.float32)
     img = (img / 127.5) - 1.
