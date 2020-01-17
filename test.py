@@ -34,11 +34,17 @@ if(USE_YOLO):
     yolo_df = pd.read_csv("Data/yolo.csv", index_col=0, encoding="utf-8-sig")
     yolo_df = yolo_df.fillna(0)
 
+df = df.loc[(df['Year'] <= 1975)] #You can change this so remove old movies for now it is turned of because of the sample posters
+
+print(df)
+
 # Remove posters that do not occur in the csv and remove movies that have no poster
 for id_key in list(img_dict):
     if id_key not in df.index:
-        del img_dict[id_key]
+        del img_dict[id_key] 
 df = df.loc[list(img_dict)]
+
+print(df)
 
 df.Genre = [x.split("|") for x in df.Genre]
 genres = sorted(set(y for x in df.Genre for y in x))
