@@ -1,9 +1,13 @@
 #https://www.kaggle.com/joshmiller656/classifying-movies-from-raw-image-using-convnets inspiration from this 
 #https://github.com/benckx/dnn-movie-posters/blob/master/ interesting repo
 
+import keras
+import vgg16
+import resnet
+import fcnet
 import numpy as np # pip install numpy
 import pandas as pd # pip install pandas
-
+import random
 from subprocess import check_output
 
 #Adjust the path to the posters here:
@@ -49,7 +53,6 @@ genres = sorted(set(y for x in df.Genre for y in x))
 
 classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, index=df.index)
 
-import random
 
 print("Processing data")
 
@@ -115,36 +118,48 @@ else:
 y = np.asarray(y)
 y_test = np.asarray(y_test)
 
-print("Using model")
+# mode 0, 1, 2, 3
+# translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
+def runmode(mode = 0, epochs = 5, batchsize = 50):
+    score, img_model, model = None
+    modestr = ""
+    
+    if (mode < 2):
+        if (mode == 0):
+            modestr = "vgg16"
+            model = vgg16.vggmodel(len(genres), SIZE)
+        else:
+            modestr = "resnet50"
+            model = resnet.resnet50(len(genres), SIZE)
+        
+        model.fit(x, y, batch_size=batchsize, epochs=epochs, validation_data=(x_test, y_test))
+        score = model.evaluate(x_test, y_test)
+    else: 
+        if (mode == 2):
+            modestr = "vgg16-objdet"
+            img_model = vgg16.vggmodel(len(genres), SIZE, False)
+        else:
+            modestr = "resnet50-objdet"
+            img_model = resnet.resnet50(len(genres), SIZE, False)
 
-import keras
-import vgg16
-import resnet
-import fcnet
+        model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model)
+        model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test))
+        score = model.evaluate([x_yolo_test, x_img_test], y_test)
+    
+    # print metrics
+    print("Model metrics for " + modestr + ":")
+    for i in range(len(model.metrics_names)):
+        print(model.metrics_names[i]+':', score[i])
 
-if USE_YOLO:
-    img_model = vgg16.vggmodel(len(genres), SIZE, False)
-    #img_model = resnet.resnet50(len(genres), SIZE, False) 
-    model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model)
+    # save model
+    model.save_weights(modestr + ".h5")
+    print("Saved model " + modestr + "to disk!")
 
-    model.fit([x_yolo,x_img], y,
-          batch_size=50,
-          epochs=5,
-          validation_data=([x_yolo_test, x_img_test], y_test))
-    score = model.evaluate([x_yolo_test, x_img_test], y_test)
-else:
-    model = vgg16.vggmodel(len(genres), SIZE)
-    #model = resnet.resnet50(len(genres), SIZE)
-
-    model.fit(x, y,
-          batch_size=50,
-          epochs=5,
-          validation_data=(x_test, y_test))
-    score = model.evaluate(x_test, y_test)
-
-#Print metrics:
-for i in range(len(model.metrics_names)):
-    print(model.metrics_names[i]+':', score[i])
+def runmodeall(epochs = 5, batchsize = 50):
+    runmode(0, epochs, batchsize)
+    runmode(1, epochs, batchsize)
+    runmode(2, epochs, batchsize)
+    runmode(3, epochs, batchsize)
 
 #Visualise:
 #https://github.com/nickbiso/Keras-Class-Activation-Map/blob/master/Class%20Activation%20Map(CAM).ipynb
@@ -197,6 +212,3 @@ if (not USE_YOLO) and VISUALISE:
 #loadedmodel.load_weights("model.h5")
 #pred = loadedmodel.predict(np.asarray([x_test[5]]))
 
-#SAVE THE MODEL FOR FURTHER USE
-#model.save_weights("model.h5")
-#print("Saved model to disk")
