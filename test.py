@@ -28,13 +28,15 @@ def get_id(filename):
 # Populate image dicts
 img_dict = {get_id(fn):fn for fn in image_glob}
 
-#Reads the movie genres
-df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
+# Load yolo data
 if(USE_YOLO):
     yolo_df = pd.read_csv("Data/yolo.csv", index_col=0, encoding="utf-8-sig")
     yolo_df = yolo_df.fillna(0)
 
+#Reads the movie genres
+df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
 df = df.loc[(df['Year'] <= 1975)] #You can change this so remove old movies for now it is turned of because of the sample posters
+df.Genre = [x.split("|") for x in df.Genre]
 
 # Remove posters that do not occur in the csv and remove movies that have no poster
 for id_key in list(img_dict):
@@ -42,11 +44,8 @@ for id_key in list(img_dict):
         del img_dict[id_key] 
 df = df.loc[list(img_dict)]
 
-print(df)
-
-df.Genre = [x.split("|") for x in df.Genre]
+# Process genres
 genres = sorted(set(y for x in df.Genre for y in x))
-
 classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, index=df.index)
 
 import random
