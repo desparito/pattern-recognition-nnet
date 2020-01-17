@@ -12,7 +12,8 @@ def fcnmodel(num_classes, yolo_size, img_model):
     # get input objects
     # get genres as input labels
     yolo_model = Sequential()
-    yolo_model.add(Dense(units=4096,activation="relu", input_shape = (1, yolo_size)))
+    yolo_model.add(Dense(units=yolo_size,activation="relu", input_shape = (1, yolo_size)))
+    yolo_model.add(Dense(units=1024,activation="relu"))
     yolo_model.add(Dense(units=4096,activation="relu"))
     yolo_model.add(Flatten())
     yolo_model.add(BatchNormalization())
