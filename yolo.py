@@ -227,8 +227,9 @@ MULTITREAD = True
 if MULTITREAD:
     num_cores = multiprocessing.cpu_count()
     num_items = int(len(image_glob)/num_cores) * num_cores
-    image_glob = np.reshape(image_glob[:num_items], (num_cores, -1))
-    print("%i items per thread" % image_glob.shape[1])
-    Parallel(n_jobs=2)(delayed(classifymany)(i) for i in image_glob)
-else:
-    classifymany(image_glob)
+    image_glob_multi = np.reshape(image_glob[:num_items], (num_cores, -1))
+    image_glob = image_glob[num_items:]
+    print("%i items per thread" % image_glob_multi.shape[1])
+    Parallel(n_jobs=num_cores)(delayed(classifymany)(i) for i in image_glob_multi)
+
+classifymany(image_glob)

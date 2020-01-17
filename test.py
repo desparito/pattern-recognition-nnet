@@ -11,7 +11,7 @@ import random
 from subprocess import check_output
 
 #Adjust the path to the posters here:
-path = 'Data/SampleMoviePosters/SampleMoviePosters'
+path = 'Data/SampleMoviePosters/SampleMoviePosters/'
 import glob #pip install glob
 import scipy.misc #pip install ..
 import imageio #pip install imageio
@@ -22,35 +22,39 @@ USE_YOLO = False
 
 print("Reading data")
 
-image_glob = glob.glob(path+"/"+"*.jpg")
+image_glob = glob.glob(path+"*.jpg")
 
 def get_id(filename):
     index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
     index_f = filename.rfind(".jpg")
     return int(filename[index_s:index_f])
 
-#Populate image dicts
-img_dict = {get_id(fn):imageio.imread(fn, pilmode="RGB", as_gray=False) for fn in image_glob}
+# Populate image dicts
+img_dict = {get_id(fn):fn for fn in image_glob}
 
-#Reads the movie genres
-df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
+# Load yolo data
 if(USE_YOLO):
     yolo_df = pd.read_csv("Data/yolo.csv", index_col=0, encoding="utf-8-sig")
     yolo_df = yolo_df.fillna(0)
 
+#Reads the movie genres
+df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
 df = df.loc[(df['Year'] <= 1975)] #You can change this so remove old movies for now it is turned of because of the sample posters
+df.Genre = [x.split("|") for x in df.Genre]
 
 # Remove posters that do not occur in the csv and remove movies that have no poster
 for id_key in list(img_dict):
     if id_key not in df.index:
         del img_dict[id_key] 
+    if USE_YOLO and id_key not in yolo_df.index:
+        del img_dict[id_key]
+
 df = df.loc[list(img_dict)]
+if USE_YOLO:
+    yolo_df = yolo_df.loc[list(img_dict)]
 
-print(df)
-
-df.Genre = [x.split("|") for x in df.Genre]
+# Process genres
 genres = sorted(set(y for x in df.Genre for y in x))
-
 classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, index=df.index)
 
 
@@ -60,63 +64,44 @@ print("Processing data")
 Some relatively simple image preprocessing
 """
 def preprocess(img,size=(32,32)):
+    img = imageio.imread(img, pilmode="RGB", as_gray=False)
     img = np.array(Image.fromarray(img).resize(size))
     img = img.astype(np.float32)
     img = (img / 127.5) - 1.
     return img
 
-def get_dataset(train_size,img_size=(32,32)):
-    #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
-    images = list(img_dict)
-    indices = random.sample(images,train_size)
-    x = []
-    y = []
-    x_test = []
-    y_test = []
-    for id_key in images:
-        if id_key in indices:
-            x.append(preprocess(img_dict[id_key],size=img_size))
-            y.append(classes.loc[id_key])
-        else:
-            x_test.append(preprocess(img_dict[id_key],size=img_size))
-            y_test.append(classes.loc[id_key])
-    return x,y,x_test,y_test
-
-def get_dataset_yolo(train_size, img_size=(32,32)):
+def get_dataset(train_size, img_size=(32,32)):
     images = list(img_dict)
     indices = random.sample(images,train_size)
     x_img = []
-    x_yolo = []
-    y = []
     x_img_test = []
-    x_yolo_test = []
+    y = []
     y_test = []
+    x_yolo = []
+    x_yolo_test = []
     for id_key in images:
         if id_key in indices:
             x_img.append(preprocess(img_dict[id_key],size=img_size))
-            x_yolo.append([yolo_df.loc[id_key]])
             y.append(classes.loc[id_key])
+            if USE_YOLO:
+                x_yolo.append([yolo_df.loc[id_key]])
         else:
             x_img_test.append(preprocess(img_dict[id_key],size=img_size))
-            x_yolo_test.append([yolo_df.loc[id_key]])
             y_test.append(classes.loc[id_key])
-    return x_img,x_yolo,y,x_img_test,x_yolo_test,y_test
+            if USE_YOLO:
+                x_yolo_test.append([yolo_df.loc[id_key]])
+    return (
+        np.asarray(x_img),
+        np.asarray(x_img_test),
+        np.asarray(y),
+        np.asarray(y_test),
+        np.asarray(x_yolo),
+        np.asarray(x_yolo_test)
+        )
 
 #Constant to keep track of our image size
 SIZE = (128, 128)
-if USE_YOLO:
-    x_img,x_yolo,y,x_img_test,x_yolo_test,y_test = get_dataset_yolo(300,img_size=SIZE)
-    x_img = np.asarray(x_img)
-    x_yolo = np.asarray(x_yolo)
-    x_img_test = np.asarray(x_img_test)
-    x_yolo_test = np.asarray(x_yolo_test)
-else:
-    x,y,x_test,y_test = get_dataset(300,img_size=SIZE)
-    x = np.asarray(x)
-    x_test = np.asarray(x_test)
-
-y = np.asarray(y)
-y_test = np.asarray(y_test)
+x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(300,img_size=SIZE)
 
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
@@ -161,6 +146,7 @@ def runmodeall(epochs = 5, batchsize = 50):
     runmode(2, epochs, batchsize)
     runmode(3, epochs, batchsize)
 
+
 #Visualise:
 #https://github.com/nickbiso/Keras-Class-Activation-Map/blob/master/Class%20Activation%20Map(CAM).ipynb
 VISUALISE = False
@@ -168,27 +154,31 @@ if (not USE_YOLO) and VISUALISE:
     visualise_keys = [25607, 25601, 25590, 25586, 25580, 25555, 25536, 25499]
     vis = []
     for key in visualise_keys:
-        vis.append(preprocess(img_dict[id_key],size=SIZE))
+        vis.append(preprocess(img_dict[key],size=SIZE))
     preds = model.predict(np.asarray(vis))
-    argmax = np.argmax(preds[0])
-    output = model.output[:, argmax]
 
-    last_conv_layer = model.get_layer('last_conv') #for vgg16
-    #last_conv_later = ??? #for resnet?
-    import keras.backend as K
-    grads = K.gradients(output, last_conv_layer.output)[0]
-    pooled_grads = K.mean(grads, axis=(0, 1, 2))
-    iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
-    pooled_grads_value, conv_layer_output_value = iterate(np.asarray(vis))
-
-    for i in range(512):
-        conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
-    heatmap = np.mean(conv_layer_output_value, axis=-1)
-    heatmap = np.maximum(heatmap, 0)
-    heatmap /= np.max(heatmap)
-
-    import cv2 #pip install opencv-python
+    index = 0
+    print(preds)
     for key in visualise_keys:
+        argmax = np.argmax(preds[index])
+        index += 1
+        output = model.output[:, argmax]
+
+        last_conv_layer = model.get_layer('last_conv') #for vgg16
+        #last_conv_later = ??? #for resnet?
+        import keras.backend as K
+        grads = K.gradients(output, last_conv_layer.output)[0]
+        pooled_grads = K.mean(grads, axis=(0, 1, 2))
+        iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
+        pooled_grads_value, conv_layer_output_value = iterate(np.asarray(vis))
+
+        for i in range(512):
+            conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
+        heatmap = np.mean(conv_layer_output_value, axis=-1)
+        heatmap = np.maximum(heatmap, 0)
+        heatmap /= np.max(heatmap)
+
+        import cv2 #pip install opencv-python
         img = cv2.imread(path + '/' + str(key) + '.jpg')
         heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
         heatmap = np.uint8(255 * heatmap)
@@ -198,17 +188,10 @@ if (not USE_YOLO) and VISUALISE:
         output = './Heatmaps/' + str(key) + '.jpeg'
         cv2.imwrite(output, superimposed_img)
         img=imageio.imread(output)
-
-        import matplotlib
-        matplotlib.use('agg')
-        import matplotlib.pyplot as plt #pip install matplotlib
-        plt.imshow(img)
-        plt.axis('off')
-        plt.title('Heatmap for label' + str(argmax))
-        plt.figure().savefig('./Heatmaps/' + str(key) + '_plot.png')
+        print('Wrote heatmap for label ' + str(argmax) + ' for poster with key ' + str(key))
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
 #loadedmodel = vgg16.vggmodel(len(genres), SIZE)
 #loadedmodel.load_weights("model.h5")
-#pred = loadedmodel.predict(np.asarray([x_test[5]]))
+#pred = loadedmodel.predict(np.asarray([x_img_test[5]]))
 
