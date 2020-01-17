@@ -106,7 +106,6 @@ x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(300,img_size=SIZ
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
 def runmode(mode = 0, epochs = 5, batchsize = 50):
-    score, img_model, model = None
     modestr = ""
     
     if (mode < 2):
@@ -117,7 +116,8 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
             modestr = "resnet50"
             model = resnet.resnet50(len(genres), SIZE)
         
-        model.fit(x, y, batch_size=batchsize, epochs=epochs, validation_data=(x_test, y_test))
+        print("Fitting " + modestr + ":")
+        model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test))
         score = model.evaluate(x_test, y_test)
     else: 
         if (mode == 2):
@@ -128,6 +128,7 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
             img_model = resnet.resnet50(len(genres), SIZE, False)
 
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model)
+        print("Fitting " + modestr + ":")
         model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test))
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
     
@@ -145,6 +146,8 @@ def runmodeall(epochs = 5, batchsize = 50):
     runmode(1, epochs, batchsize)
     runmode(2, epochs, batchsize)
     runmode(3, epochs, batchsize)
+
+#runmodeall(1000, 200)
 
 
 #Visualise:
