@@ -42,7 +42,12 @@ df.Genre = [x.split("|") for x in df.Genre]
 for id_key in list(img_dict):
     if id_key not in df.index:
         del img_dict[id_key] 
+    if USE_YOLO and id_key not in yolo_df.index:
+        del img_dict[id_key]
+
 df = df.loc[list(img_dict)]
+if USE_YOLO:
+    yolo_df = yolo_df.loc[list(img_dict)]
 
 # Process genres
 genres = sorted(set(y for x in df.Genre for y in x))
