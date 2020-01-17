@@ -29,7 +29,7 @@ def fcnmodel(num_classes, yolo_size, img_model):
 
     top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
     top3_acc.__name__ = 'top3_accuracy'
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=[top3_acc, metrics.categorical_accuracy])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=[top3_acc, metrics.accuracy])
     return model
     
 
