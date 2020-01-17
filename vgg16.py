@@ -26,7 +26,7 @@ def vggmodel(num_classes, size, compiled = True):
     model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
     model.add(Conv2D(filters=512, kernel_size=(3,3), padding="same", activation="relu"))
     model.add(Conv2D(filters=512, kernel_size=(3,3), padding="same", activation="relu"))
-    model.add(Conv2D(filters=512, kernel_size=(3,3), padding="same", activation="relu"))
+    model.add(Conv2D(filters=512, kernel_size=(3,3), padding="same", activation="relu", name="last_conv"))
     model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
 
     if(compiled):
