@@ -66,28 +66,28 @@ def get_dataset(train_size,img_size=(32,32)):
     #indices = np.random.randint(0,len(list(img_dict.keys()))-1,batch_size)
     images = list(img_dict)
     indices = random.sample(images,train_size)
-    x = []
+    x_img = []
+    x_img_test = []
     y = []
-    x_test = []
     y_test = []
     for id_key in images:
         if id_key in indices:
-            x.append(preprocess(img_dict[id_key],size=img_size))
+            x_img.append(preprocess(img_dict[id_key],size=img_size))
             y.append(classes.loc[id_key])
         else:
-            x_test.append(preprocess(img_dict[id_key],size=img_size))
+            x_img_test.append(preprocess(img_dict[id_key],size=img_size))
             y_test.append(classes.loc[id_key])
-    return x,y,x_test,y_test
+    return x_img,y,x_img_test,y_test
 
 def get_dataset_yolo(train_size, img_size=(32,32)):
     images = list(img_dict)
     indices = random.sample(images,train_size)
     x_img = []
-    x_yolo = []
-    y = []
     x_img_test = []
-    x_yolo_test = []
+    y = []
     y_test = []
+    x_yolo = []
+    x_yolo_test = []
     for id_key in images:
         if id_key in indices:
             x_img.append(preprocess(img_dict[id_key],size=img_size))
@@ -108,9 +108,9 @@ if USE_YOLO:
     x_img_test = np.asarray(x_img_test)
     x_yolo_test = np.asarray(x_yolo_test)
 else:
-    x,y,x_test,y_test = get_dataset(300,img_size=SIZE)
-    x = np.asarray(x)
-    x_test = np.asarray(x_test)
+    x_img,y,x_img_test,y_test = get_dataset(300,img_size=SIZE)
+    x_img = np.asarray(x_img)
+    x_img_test = np.asarray(x_img_test)
 
 y = np.asarray(y)
 y_test = np.asarray(y_test)
@@ -136,11 +136,11 @@ else:
     model = vgg16.vggmodel(len(genres), SIZE)
     #model = resnet.resnet50(len(genres), SIZE)
 
-    model.fit(x, y,
+    model.fit(x_img, y,
           batch_size=50,
           epochs=5,
-          validation_data=(x_test, y_test))
-    score = model.evaluate(x_test, y_test)
+          validation_data=(x_img_test, y_test))
+    score = model.evaluate(x_img_test, y_test)
 
 #Print metrics:
 for i in range(len(model.metrics_names)):
@@ -195,7 +195,7 @@ if (not USE_YOLO) and VISUALISE:
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
 #loadedmodel = vgg16.vggmodel(len(genres), SIZE)
 #loadedmodel.load_weights("model.h5")
-#pred = loadedmodel.predict(np.asarray([x_test[5]]))
+#pred = loadedmodel.predict(np.asarray([x_img_test[5]]))
 
 #SAVE THE MODEL FOR FURTHER USE
 #model.save_weights("model.h5")
