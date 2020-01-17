@@ -1,6 +1,7 @@
 # vgg 16 (16 layers with weights)
 import functools
 import keras
+import keras.metrics as metrics
 import metric
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPool2D
@@ -37,7 +38,7 @@ def vggmodel(num_classes, size, compiled = True):
         top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
         top3_acc.__name__ = 'top3_accuracy'
         opt = Adam(lr=0.001)
-        model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc])
+        model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc, metrics.categorical_accuracy])
     return model
 
 

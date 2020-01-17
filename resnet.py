@@ -2,6 +2,7 @@ import functools
 import keras
 import metric
 import keras.models as models
+import keras.metrics as metrics
 import keras.layers as layers
 import keras.backend as backend
 import keras.regularizers as regularizers
@@ -196,6 +197,6 @@ def resnet50(num_classes, size, compiled = True):
         top3_acc = functools.partial(metric.top_categorical_accuracy, num_classes=num_classes)
         top3_acc.__name__ = 'top3_accuracy'
         opt = Adam(lr=0.001)
-        model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc]) 
+        model.compile(optimizer=opt, loss=keras.losses.binary_crossentropy, metrics=[top3_acc, metrics.categorical_accuracy]) 
          
     return model
