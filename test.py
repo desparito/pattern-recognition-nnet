@@ -11,7 +11,7 @@ import random
 from subprocess import check_output
 
 #Adjust the path to the posters here:
-path = 'Data/SampleMoviePosters/SampleMoviePosters/'
+path = 'Data/Posters/'
 import glob #pip install glob
 import scipy.misc #pip install ..
 import imageio #pip install imageio
@@ -101,7 +101,7 @@ def get_dataset(train_size, img_size=(32,32)):
 
 #Constant to keep track of our image size
 SIZE = (128, 128)
-x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(300,img_size=SIZE)
+x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.7),img_size=SIZE)
 
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
@@ -147,7 +147,7 @@ def runmodeall(epochs = 5, batchsize = 50):
     runmode(2, epochs, batchsize)
     runmode(3, epochs, batchsize)
 
-#runmodeall(1000, 200)
+runmodeall(100, 20)
 
 
 #Visualise:
