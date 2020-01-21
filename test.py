@@ -125,7 +125,7 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
         
         print("Fitting " + modestr + ":")
         model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
-        score = model.evaluate(x_test, y_test)
+        score = model.evaluate(x_img_test, y_test)
     else: 
         if (mode == 2):
             modestr = "vgg16-objdet"
