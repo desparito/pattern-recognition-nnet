@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 
 
-def fcnmodel(num_classes, yolo_size, img_model):
+def fcnmodel(num_classes, yolo_size, img_model, img_type = "vgg16"):
     # get input objects
     # get genres as input labels
     yolo_model = Sequential()
@@ -18,8 +18,9 @@ def fcnmodel(num_classes, yolo_size, img_model):
     yolo_model.add(Flatten())
     yolo_model.add(BatchNormalization())
 
-    img_model.add(Flatten())
-    img_model.add(BatchNormalization())
+    if(img_type == "vgg16"):
+        img_model.add(Flatten())
+        img_model.add(BatchNormalization())
 
     model = Concatenate()([yolo_model.output, img_model.output])
     #model = Flatten()(model)

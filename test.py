@@ -23,7 +23,7 @@ import imageio #pip install imageio
 from PIL import Image #pip install Pillow
 
 #Boolean to choose if we want to use YOLO:
-USE_YOLO = False
+USE_YOLO = True
 
 print("Reading data")
 
@@ -134,7 +134,7 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
             modestr = "resnet50-objdet"
             img_model = resnet.resnet50(len(genres), SIZE, False)
 
-        model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model)
+        model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, modestr)
         print("Fitting " + modestr + ":")
         model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
@@ -150,7 +150,7 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
 
 def runmodeall(epochs = 5, batchsize = 50):
     #runmode(0, epochs, batchsize)
-    runmode(1, epochs, batchsize)
+    #runmode(1, epochs, batchsize)
     #runmode(2, epochs, batchsize)
     runmode(3, epochs, batchsize)
 
