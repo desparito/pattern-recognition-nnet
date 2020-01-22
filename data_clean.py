@@ -36,10 +36,6 @@ data.Title = data.Title.apply(lambda x: x[:-7])
 # Remove any movies that are made before 2011
 data = data[data.Year >= 2012]
 
-if os.path.isfile("Data/downloaderror.csv"):
-    posters = list(pd.read_csv("Data/downloaderror.csv", header=None)[0])
-    data = data[-data.imdbId.isin(posters)]
-
 # Write the data to a new csv with genres concatinated as in the origional dataset
 data.Genre = ['|'.join(i) for i in data.Genre]
 data.to_csv("Data/cleaned.csv", index=False)
