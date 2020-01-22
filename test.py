@@ -16,7 +16,7 @@ from subprocess import check_output
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 #Adjust the path to the posters here:
-path = 'Data/Posters/'
+path = 'Data/Arrays/'
 import glob #pip install glob
 import scipy.misc #pip install ..
 import imageio #pip install imageio
@@ -29,11 +29,11 @@ print("Reading data")
 
 def get_id(filename):
     index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
-    index_f = filename.rfind(".jpg")
+    index_f = filename.rfind(".npy")
     return int(filename[index_s:index_f])
 
 # Populate image dicts
-img_dict = {get_id(fn):fn for fn in glob.glob(path+"*.jpg")}
+img_dict = {get_id(fn):fn for fn in glob.glob(path+"*.npy")}
 
 # Load yolo data
 if(USE_YOLO):
@@ -61,17 +61,6 @@ classes = pd.DataFrame(data={g:[g in r for r in df.Genre] for g in genres}, inde
 
 
 print("Processing data")
-
-"""
-Some relatively simple image preprocessing
-"""
-def preprocess(img,size=(32,32)):
-    img = imageio.imread(img, pilmode="RGB", as_gray=False)
-    img = np.array(Image.fromarray(img).resize(size))
-    img = img.astype(np.float32)
-    img = (img / 127.5) - 1.
-    return img
-
 #Constant to keep track of our image size
 IMG_SIZE   = (128, 128)
 TRAIN_SIZE = round(len(img_dict)*0.2)
@@ -86,12 +75,12 @@ x_yolo = []
 x_yolo_test = []
 for id_key in list(img_dict):
     if id_key in indices:
-        x_img.append(preprocess(img_dict[id_key],size=IMG_SIZE))
+        x_img.append(np.load(img_dict[id_key]))
         y.append(classes.loc[id_key])
         if USE_YOLO:
             x_yolo.append([yolo_df.loc[id_key]])
     else:
-        x_img_test.append(preprocess(img_dict[id_key],size=IMG_SIZE))
+        x_img_test.append(np.load(img_dict[id_key]))
         y_test.append(classes.loc[id_key])
         if USE_YOLO:
             x_yolo_test.append([yolo_df.loc[id_key]])

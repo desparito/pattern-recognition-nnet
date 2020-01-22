@@ -11,11 +11,12 @@ $ pip install -r requirements.txt
 ```
 
 ## Step 2: Creating the dataset
-The origional dataset needs to be cleaned and all posters need to be downloaded. Firstly the data needs to be cleanedand then downloaded.
+The origional dataset needs to be cleaned and all posters need to be downloaded. Firstly the data needs to be cleanedand then downloaded. After downloading each image will be changed to an numpy array.
 
 ```
 $ python data_clean.py
 $ python data_scrape.py
+$ python data_resize.py
 ```
 
 ## Step 3: Creating YOLO data
