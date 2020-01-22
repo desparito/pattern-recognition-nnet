@@ -20,8 +20,8 @@ python scrapeposters.py
 If you want to use YOLO classification to increase accuracy the yolo data needs to be created beforehand. This requires the weight dataset as well, which can be downloaded with the script below. With these weights a model will be created which in turn can be used to do the actual classification.
 ```bash
 wget https://pjreddie.com/media/files/yolov3.weights
-python yolomodel.py
-python yolo.py
+python yolo_createmodel.py
+python yolo_classify.py
 ```
 
 ## Step 4: Running the neural network
