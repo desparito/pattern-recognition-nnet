@@ -1,12 +1,9 @@
 # load yolov3 model and perform object detection
 # based on https://github.com/experiencor/keras-yolo3
 import numpy as np
-from numpy import expand_dims
 from keras.models import load_model
 from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
-#from matplotlib import pyplot
-#from matplotlib.patches import Rectangle
  
 class BoundBox:
 	def __init__(self, xmin, ymin, xmax, ymax, objness = None, classes = None):
@@ -125,7 +122,7 @@ def load_image_pixels(filename, shape):
 	image = image.astype('float32')
 	image /= 255.0
 	# add a dimension so that we have one sample
-	image = expand_dims(image, 0)
+	image = np.expand_dims(image, 0)
 	return image, width, height
  
 # get all of the results above a threshold
@@ -146,7 +143,7 @@ def get_boxes(boxes, labels, thresh):
 # draw all results
 
 # load yolov3 model
-model = load_model('model.h5')
+model = load_model('yolo_model.h5')
 # define the expected input shape for the model
 input_w, input_h = 128, 128
 # define the anchors
@@ -166,9 +163,7 @@ labels = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", 
 	"book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"]
 
 import pandas as pd
-import glob #pip install glob
-from joblib import Parallel, delayed
-import multiprocessing
+import glob
 import os.path
 
 def get_id(filename):
@@ -225,6 +220,8 @@ def classifymany(items):
 
 MULTITREAD = True
 if MULTITREAD:
+    from joblib import Parallel, delayed
+    import multiprocessing
     num_cores = multiprocessing.cpu_count()
     num_items = int(len(image_glob)/num_cores) * num_cores
     image_glob_multi = np.reshape(image_glob[:num_items], (num_cores, -1))
