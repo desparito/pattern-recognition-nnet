@@ -44,7 +44,6 @@ if(USE_YOLO):
 
 #Reads the movie genres
 df = pd.read_csv("Data/cleaned.csv",index_col="imdbId")
-df = df.loc[(df['Year'] >= 2012)] #You can change this so remove old movies for now it is turned of because of the sample posters
 df.Genre = [x.split("|") for x in df.Genre]
 
 # Remove posters that do not occur in the csv and remove movies that have no poster

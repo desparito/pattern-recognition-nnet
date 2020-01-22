@@ -27,13 +27,14 @@ genres = [x for x in genres if genres[x] < 100]
 data.Genre = [[x for x in r if x not in genres] for r in data.Genre]
 data = data[data.Genre.apply(lambda x: len(x) > 0)]
 
-# Remove year from the title and remove year from title if it is a correct year
+# Parse year from title and remove year from the title if year is a valid number. Remove rows that do not have such year.
 data = data.assign(Year=[t[-5:-1] for t in data.Title])
-data.loc[~data.Year.apply(lambda x: x.isdigit() and len(x) == 4), "Year"] = nan
-data.loc[data.Year.notna(), "Title"] = data.loc[data.Year.notna(), "Title"].apply(lambda x: x[:-7])
+data = data[data.Year.apply(lambda x: x.isdigit() and len(x) == 4)]
+data.Year = data.Year.apply(lambda x: int(x))
+data.Title = data.Title.apply(lambda x: x[:-7])
 
-# Remove all moves that do not have a year
-#data = data[data.Year.notna()]
+# Remove any movies that are made before 2011
+data = data[data.Year >= 2012]
 
 if os.path.isfile("Data/downloaderror.csv"):
     posters = list(pd.read_csv("Data/downloaderror.csv", header=None)[0])
