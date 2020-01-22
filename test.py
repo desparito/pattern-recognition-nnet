@@ -104,9 +104,9 @@ def get_dataset(train_size, img_size=(32,32)):
         )
 
 #Constant to keep track of our image size
-SIZE = (128, 128)
+IMG_SIZE = (128, 128)
 
-x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.2),img_size=SIZE)
+x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.2),img_size=IMG_SIZE)
 tensorboard = TensorBoard(log_dir="logs/{}".format(time())) #initialise Tensorboard
 
 # mode 0, 1, 2, 3
@@ -117,10 +117,10 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
     if (mode < 2):
         if (mode == 0):
             modestr = "vgg16"
-            model = vgg16.vggmodel(len(genres), SIZE)
+            model = vgg16.vggmodel(len(genres), IMG_SIZE)
         else:
             modestr = "resnet50"
-            model = resnet.resnet50(len(genres), SIZE)
+            model = resnet.resnet50(len(genres), IMG_SIZE)
         
         print("Fitting " + modestr + ":")
         model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
@@ -128,10 +128,10 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
     else: 
         if (mode == 2):
             modestr = "vgg16-objdet"
-            img_model = vgg16.vggmodel(len(genres), SIZE, False)
+            img_model = vgg16.vggmodel(len(genres), IMG_SIZE, False)
         else:
             modestr = "resnet50-objdet"
-            img_model = resnet.resnet50(len(genres), SIZE, False)
+            img_model = resnet.resnet50(len(genres), IMG_SIZE, False)
 
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, modestr)
         print("Fitting " + modestr + ":")
@@ -162,7 +162,7 @@ if (not USE_YOLO) and VISUALISE:
     visualise_keys = [25607, 25601, 25590, 25586, 25580, 25555, 25536, 25499]
     vis = []
     for key in visualise_keys:
-        vis.append(preprocess(img_dict[key],size=SIZE))
+        vis.append(preprocess(img_dict[key],size=IMG_SIZE))
     preds = model.predict(np.asarray(vis))
 
     index = 0
@@ -199,7 +199,7 @@ if (not USE_YOLO) and VISUALISE:
         print('Wrote heatmap for label ' + str(argmax) + ' for poster with key ' + str(key))
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
-#loadedmodel = vgg16.vggmodel(len(genres), SIZE)
+#loadedmodel = vgg16.vggmodel(len(genres), IMG_SIZE)
 #loadedmodel.load_weights("model.h5")
 #pred = loadedmodel.predict(np.asarray([x_img_test[5]]))
 
