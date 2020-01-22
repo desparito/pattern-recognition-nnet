@@ -106,7 +106,7 @@ def get_dataset(train_size, img_size=(32,32)):
 #Constant to keep track of our image size
 SIZE = (128, 128)
 
-x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.2),img_size=SIZE)
+x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.7),img_size=SIZE)
 tensorboard = TensorBoard(log_dir="logs/{}".format(time())) #initialise Tensorboard
 
 # mode 0, 1, 2, 3
@@ -116,10 +116,12 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
     
     if (mode < 2):
         if (mode == 0):
-            modestr = "vgg16"
+            modestr = "vgg16-70t-20e"
+            img_type = "vgg16"
             model = vgg16.vggmodel(len(genres), SIZE)
         else:
-            modestr = "resnet50"
+            modestr = "resnet50-70t-20e"
+            img_type = "resnet50"
             model = resnet.resnet50(len(genres), SIZE)
         
         print("Fitting " + modestr + ":")
@@ -127,13 +129,15 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
         score = model.evaluate(x_img_test, y_test)
     else: 
         if (mode == 2):
-            modestr = "vgg16-objdet"
+            modestr = "vgg16-objdet-70t20e"
+            img_type = "vgg16"
             img_model = vgg16.vggmodel(len(genres), SIZE, False)
         else:
-            modestr = "resnet50-objdet"
+            modestr = "resnet50-objdet-70t20e"
+            img_type = "resnet50"
             img_model = resnet.resnet50(len(genres), SIZE, False)
 
-        model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, modestr)
+        model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, img_type)
         print("Fitting " + modestr + ":")
         model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
