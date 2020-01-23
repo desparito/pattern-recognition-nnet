@@ -23,7 +23,7 @@ import imageio #pip install imageio
 from PIL import Image #pip install Pillow
 
 #Boolean to choose if we want to use YOLO:
-USE_YOLO = True
+USE_YOLO = False
 
 print("Reading data")
 
@@ -105,12 +105,10 @@ x_yolo_test = np.asarray(x_yolo_test)
 
 print("Running Model")
 
-tensorboard = TensorBoard(log_dir="logs/{}".format(time())) #initialise Tensorboard
-
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
 def runmode(mode = 0, epochs = 5, batchsize = 50):
-    modestr = ""
+    modestr = ""    
     
     if (mode < 2):
         if (mode == 0):
@@ -121,6 +119,8 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
             model = resnet.resnet50(len(genres), IMG_SIZE)
         
         print("Fitting " + modestr + ":")
+
+        tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
         model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
         score = model.evaluate(x_img_test, y_test)
     else: 
@@ -133,6 +133,7 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
 
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, modestr)
         print("Fitting " + modestr + ":")
+        tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
         model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
     
@@ -146,9 +147,9 @@ def runmode(mode = 0, epochs = 5, batchsize = 50):
     print("Saved model " + modestr + "to disk!")
 
 def runmodeall(epochs = 5, batchsize = 50):
-    #runmode(0, epochs, batchsize)
+    runmode(0, epochs, batchsize)
     #runmode(1, epochs, batchsize)
     #runmode(2, epochs, batchsize)
-    runmode(3, epochs, batchsize)
+    #runmode(3, epochs, batchsize)
 
 runmodeall(20, 200)

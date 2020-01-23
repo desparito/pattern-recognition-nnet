@@ -1,16 +1,27 @@
 import vgg16
 import resnet
+import pandas as pd
+import imageio
+import numpy as np
+from PIL import Image
 
 GENRE_VECTOR_LENGTH = 22
 SIZE = (128,128) 
 
+#Adjust the path to the posters here:
+path = 'Data/SampleMoviePosters/SampleMoviePosters/'
+
+def preprocess(img,size=(32,32)):
+    img = imageio.imread(img, pilmode="RGB", as_gray=False)
+    img = np.array(Image.fromarray(img).resize(size))
+    img = img.astype(np.float32)
+    img = (img / 127.5) - 1.
+    return img
+
 def loadimages():
-    #Adjust the path to the posters here:
-    path = 'Data/SampleMoviePosters/SampleMoviePosters/'
     import glob #pip install glob
     import scipy.misc #pip install ..
     import imageio #pip install imageio
-    from PIL import Image #pip install Pillow
 
     print("Reading data")
 
@@ -49,13 +60,12 @@ def buildmodel(mode = 0):
         
         return model
     else: 
-        print("heatmaps not implemented for YOLO models.")
+        print("Heatmaps not implemented for YOLO models.")
     
 img_dict = loadimages()
 model = buildmodel(0)
 from keras.models import load_model
 model.load_weights("vgg16-70t-20e.h5")
-#model.load_weights("resnet50-70t-20e.h5")
 
 #Visualise:
 #https://github.com/nickbiso/Keras-Class-Activation-Map/blob/master/Class%20Activation%20Map(CAM).ipynb
@@ -83,9 +93,9 @@ for key in visualise_keys:
     for i in range(512):
         conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
     heatmap = np.mean(conv_layer_output_value, axis=-1)
-    heatmap = np.abs(heatmap)
-    heatmap /= np.max(heatmap)
     print(heatmap)
+    heatmap += np.abs(np.min(heatmap))#np.maximum(heatmap, 0)
+    heatmap /= np.max(heatmap)
 
     import cv2 #pip install opencv-python
     img = cv2.imread(path + '/' + str(key) + '.jpg')
