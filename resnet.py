@@ -191,7 +191,7 @@ def resnet50(num_classes, size, compiled = True):
             kernel_regularizer=regularizers.l2(L2_WEIGHT_DECAY),
             bias_regularizer=regularizers.l2(L2_WEIGHT_DECAY))(x)
     else:
-        model = layers.BatchNormalization()(x)
+        x = layers.BatchNormalization()(x)
 
     model = models.Model(img_input, x, name='resnet50')
 
