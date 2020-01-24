@@ -106,8 +106,7 @@ x_yolo_test = np.asarray(x_yolo_test)
 print("Running Model")
 
 # mode 0, 1, 2, 3
-# translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
-<<<<<<< HEAD
+# translates to: vgg16, resnet50, vgg16-obj, resnet50-ob
 def runmode(mode = 0, epochs = 5, SIZE = 50):
     modestr = ""
     
@@ -156,5 +155,6 @@ def runmodeall(epochs = 5, batchsize = 50):
     #runmode(1, epochs, batchsize)
     #runmode(2, epochs, batchsize)
     #runmode(3, epochs, batchsize)
+
 
 runmodeall(20, 200)
