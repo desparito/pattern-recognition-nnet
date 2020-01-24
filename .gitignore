@@ -136,3 +136,4 @@ Data/cleaned.csv
 Data/yolo.csv
 yolov3.weights
 *.h5
+logs
