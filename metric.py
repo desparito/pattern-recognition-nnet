@@ -12,8 +12,4 @@ def top_categorical_accuracy(y_true, y_pred, num_classes):
 
 def in_top(y_pred, sort, i, k):
     return K.less_equal(tf.gather(sort,k - 1, axis=-1), tf.gather(y_pred, i, axis=-1))
-
-
-
-
-
+    

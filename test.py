@@ -23,7 +23,7 @@ import imageio #pip install imageio
 from PIL import Image #pip install Pillow
 
 #Boolean to choose if we want to use YOLO:
-USE_YOLO = True
+USE_YOLO = False
 
 print("Reading data")
 
@@ -105,10 +105,9 @@ x_yolo_test = np.asarray(x_yolo_test)
 
 print("Running Model")
 
-tensorboard = TensorBoard(log_dir="logs/{}".format(time())) #initialise Tensorboard
-
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
+<<<<<<< HEAD
 def runmode(mode = 0, epochs = 5, SIZE = 50):
     modestr = ""
     
@@ -123,6 +122,8 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
             model = resnet.resnet50(len(genres), SIZE)
         
         print("Fitting " + modestr + ":")
+
+        tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
         model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
         score = model.evaluate(x_img_test, y_test)
     else: 
@@ -137,6 +138,7 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
 
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, img_type)
         print("Fitting " + modestr + ":")
+        tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
         model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
     
@@ -150,58 +152,9 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
     print("Saved model " + modestr + "to disk!")
 
 def runmodeall(epochs = 5, batchsize = 50):
-    #runmode(0, epochs, batchsize)
+    runmode(0, epochs, batchsize)
     #runmode(1, epochs, batchsize)
     #runmode(2, epochs, batchsize)
-    runmode(3, epochs, batchsize)
+    #runmode(3, epochs, batchsize)
 
 runmodeall(20, 200)
-
-#Visualise:
-#https://github.com/nickbiso/Keras-Class-Activation-Map/blob/master/Class%20Activation%20Map(CAM).ipynb
-VISUALISE = False
-if (not USE_YOLO) and VISUALISE:
-    visualise_keys = [25607, 25601, 25590, 25586, 25580, 25555, 25536, 25499]
-    vis = []
-    for key in visualise_keys:
-        vis.append(preprocess(img_dict[key],size=IMG_SIZE))
-    preds = model.predict(np.asarray(vis))
-
-    index = 0
-    print(preds)
-    for key in visualise_keys:
-        argmax = np.argmax(preds[index])
-        index += 1
-        output = model.output[:, argmax]
-
-        last_conv_layer = model.get_layer('last_conv') #for vgg16
-        #last_conv_later = ??? #for resnet?
-        import keras.backend as K
-        grads = K.gradients(output, last_conv_layer.output)[0]
-        pooled_grads = K.mean(grads, axis=(0, 1, 2))
-        iterate = K.function([model.input], [pooled_grads, last_conv_layer.output[0]])
-        pooled_grads_value, conv_layer_output_value = iterate(np.asarray(vis))
-
-        for i in range(512):
-            conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
-        heatmap = np.mean(conv_layer_output_value, axis=-1)
-        heatmap = np.maximum(heatmap, 0)
-        heatmap /= np.max(heatmap)
-
-        import cv2 #pip install opencv-python
-        img = cv2.imread(path + '/' + str(key) + '.jpg')
-        heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
-        heatmap = np.uint8(255 * heatmap)
-        heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-        hif = .8
-        superimposed_img = heatmap * hif + img
-        output = './Heatmaps/' + str(key) + '.jpeg'
-        cv2.imwrite(output, superimposed_img)
-        img=imageio.imread(output)
-        print('Wrote heatmap for label ' + str(argmax) + ' for poster with key ' + str(key))
-
-#INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
-#loadedmodel = vgg16.vggmodel(len(genres), IMG_SIZE)
-#loadedmodel.load_weights("model.h5")
-#pred = loadedmodel.predict(np.asarray([x_img_test[5]]))
-
