@@ -114,11 +114,11 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
         if (mode == 0):
             modestr = "vgg16-70t-20e"
             img_type = "vgg16"
-            model = vgg16.vggmodel(len(genres), SIZE)
+            model = vgg16.vggmodel(len(genres), IMG_SIZE)
         else:
             modestr = "resnet50-70t-20e"
             img_type = "resnet50"
-            model = resnet.resnet50(len(genres), SIZE)
+            model = resnet.resnet50(len(genres), IMG_SIZE)
         
         print("Fitting " + modestr + ":")
 
@@ -129,11 +129,11 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
         if (mode == 2):
             modestr = "vgg16-objdet-70t20e"
             img_type = "vgg16"
-            img_model = vgg16.vggmodel(len(genres), SIZE, False)
+            img_model = vgg16.vggmodel(len(genres), IMG_SIZE, False)
         else:
             modestr = "resnet50-objdet-70t20e"
             img_type = "resnet50"
-            img_model = resnet.resnet50(len(genres), SIZE, False)
+            img_model = resnet.resnet50(len(genres), IMG_SIZE, False)
 
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, img_type)
         print("Fitting " + modestr + ":")
