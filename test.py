@@ -107,7 +107,7 @@ print("Running Model")
 
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-ob
-def runmode(mode = 0, epochs = 5, SIZE = 50):
+def runmode(mode = 0, epochs = 5, batch_size = 50):
     modestr = ""
     
     if (mode < 2):
@@ -123,7 +123,7 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
         print("Fitting " + modestr + ":")
 
         tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
-        model.fit(x_img, y, batch_size=SIZE, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
+        model.fit(x_img, y, batch_size=batchsize, epochs=epochs, validation_data=(x_img_test, y_test),callbacks=[tensorboard])
         score = model.evaluate(x_img_test, y_test)
     else: 
         if (mode == 2):
@@ -138,7 +138,7 @@ def runmode(mode = 0, epochs = 5, SIZE = 50):
         model = fcnet.fcnmodel(len(genres), len(x_yolo[0][0]), img_model, img_type)
         print("Fitting " + modestr + ":")
         tensorboard = TensorBoard(log_dir="logs\{}".format(time()) + modestr) #initialise Tensorboard
-        model.fit([x_yolo,x_img], y, batch_size=SIZE, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
+        model.fit([x_yolo,x_img], y, batch_size=batchsize, epochs=epochs, validation_data=([x_yolo_test, x_img_test], y_test),callbacks=[tensorboard])
         score = model.evaluate([x_yolo_test, x_img_test], y_test)
     
     # print metrics
