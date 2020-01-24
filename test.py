@@ -27,15 +27,13 @@ USE_YOLO = True
 
 print("Reading data")
 
-image_glob = glob.glob(path+"*.jpg")
-
 def get_id(filename):
     index_s = max(filename.rfind("\\")+1, filename.rfind("/")+1)
     index_f = filename.rfind(".jpg")
     return int(filename[index_s:index_f])
 
 # Populate image dicts
-img_dict = {get_id(fn):fn for fn in image_glob}
+img_dict = {get_id(fn):fn for fn in glob.glob(path+"*.jpg")}
 
 # Load yolo data
 if(USE_YOLO):
@@ -74,44 +72,44 @@ def preprocess(img,size=(32,32)):
     img = (img / 127.5) - 1.
     return img
 
-def get_dataset(train_size, img_size=(32,32)):
-    images = list(img_dict)
-    indices = random.sample(images,train_size)
-    x_img = []
-    x_img_test = []
-    y = []
-    y_test = []
-    x_yolo = []
-    x_yolo_test = []
-    for id_key in images:
-        if id_key in indices:
-            x_img.append(preprocess(img_dict[id_key],size=img_size))
-            y.append(classes.loc[id_key])
-            if USE_YOLO:
-                x_yolo.append([yolo_df.loc[id_key]])
-        else:
-            x_img_test.append(preprocess(img_dict[id_key],size=img_size))
-            y_test.append(classes.loc[id_key])
-            if USE_YOLO:
-                x_yolo_test.append([yolo_df.loc[id_key]])
-    return (
-        np.asarray(x_img),
-        np.asarray(x_img_test),
-        np.asarray(y),
-        np.asarray(y_test),
-        np.asarray(x_yolo),
-        np.asarray(x_yolo_test)
-        )
-
 #Constant to keep track of our image size
-SIZE = (128, 128)
+IMG_SIZE   = (128, 128)
+TRAIN_SIZE = round(len(img_dict)*0.2)
 
-x_img, x_img_test, y, y_test, x_yolo, x_yolo_test = get_dataset(round(len(img_dict)*0.7),img_size=SIZE)
+# Split and process the dataset
+indices = random.sample(list(img_dict),TRAIN_SIZE)
+x_img = []
+x_img_test = []
+y = []
+y_test = []
+x_yolo = []
+x_yolo_test = []
+for id_key in list(img_dict):
+    if id_key in indices:
+        x_img.append(preprocess(img_dict[id_key],size=IMG_SIZE))
+        y.append(classes.loc[id_key])
+        if USE_YOLO:
+            x_yolo.append([yolo_df.loc[id_key]])
+    else:
+        x_img_test.append(preprocess(img_dict[id_key],size=IMG_SIZE))
+        y_test.append(classes.loc[id_key])
+        if USE_YOLO:
+            x_yolo_test.append([yolo_df.loc[id_key]])
+
+x_img       = np.asarray(x_img)
+x_img_test  = np.asarray(x_img_test)
+y           = np.asarray(y)
+y_test      = np.asarray(y_test)
+x_yolo      = np.asarray(x_yolo)
+x_yolo_test = np.asarray(x_yolo_test)
+
+print("Running Model")
+
 tensorboard = TensorBoard(log_dir="logs/{}".format(time())) #initialise Tensorboard
 
 # mode 0, 1, 2, 3
 # translates to: vgg16, resnet50, vgg16-obj, resnet50-obj
-def runmode(mode = 0, epochs = 5, batchsize = 50):
+def runmode(mode = 0, epochs = 5, SIZE = 50):
     modestr = ""
     
     if (mode < 2):
@@ -166,7 +164,7 @@ if (not USE_YOLO) and VISUALISE:
     visualise_keys = [25607, 25601, 25590, 25586, 25580, 25555, 25536, 25499]
     vis = []
     for key in visualise_keys:
-        vis.append(preprocess(img_dict[key],size=SIZE))
+        vis.append(preprocess(img_dict[key],size=IMG_SIZE))
     preds = model.predict(np.asarray(vis))
 
     index = 0
@@ -203,7 +201,7 @@ if (not USE_YOLO) and VISUALISE:
         print('Wrote heatmap for label ' + str(argmax) + ' for poster with key ' + str(key))
 
 #INSTEAD OF FITTING NEW MODEL YOU CAN LOAD A MODEL THIS WAY
-#loadedmodel = vgg16.vggmodel(len(genres), SIZE)
+#loadedmodel = vgg16.vggmodel(len(genres), IMG_SIZE)
 #loadedmodel.load_weights("model.h5")
 #pred = loadedmodel.predict(np.asarray([x_img_test[5]]))
 
