@@ -9,7 +9,7 @@ GENRE_VECTOR_LENGTH = 22
 SIZE = (128,128) 
 
 #Adjust the path to the posters here:
-path = 'Data/SampleMoviePosters/SampleMoviePosters/'
+path = 'Data/Posters//'
 
 def preprocess(img,size=(32,32)):
     img = imageio.imread(img, pilmode="RGB", as_gray=False)
